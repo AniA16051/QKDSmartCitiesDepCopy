@@ -582,7 +582,13 @@ def main():
             ms = 5000 if refresh == "5 seconds" else 10000
             try:
                 from streamlit_autorefresh import st_autorefresh
-                st_autorefresh(interval=ms, key="soc_auto")
+                count = st_autorefresh(interval=ms, key="soc_auto")
+                if 'last_refresh_count' not in st.session_state:
+                    st.session_state.last_refresh_count = 0
+                
+                if count > st.session_state.last_refresh_count:
+                    sc.update_all_sensors()
+                    st.session_state.last_refresh_count = count
             except ImportError:
                 time.sleep(ms // 1000)
                 sc.update_all_sensors()
