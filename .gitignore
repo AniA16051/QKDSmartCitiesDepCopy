@@ -1,6 +1,8 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
+*.pyo
 .DS_Store
 .env
 *.save
@@ -11,4 +13,14 @@ dashboard/.users.json
 docker/mosquitto/data/
 docker/mosquitto/log/
 docker/shared_keystore/
-network/.keystore.json
+.agents/
+
+# TLS certs (not needed on cloud deployments)
+*.crt
+
+# Analysis output images (generated locally, not needed for deployment)
+classical_vs_quantum_comparison.png
+detection_reliability.png
+key_length_vs_qubits.png
+qber_vs_eve.png
+qber_vs_noise.png

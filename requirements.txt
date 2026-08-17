@@ -1,11 +1,12 @@
-# Streamlit & Cloud Deployment Requirements
-streamlit==1.40.0
-numpy==1.26.4
-pandas==2.2.2
-plotly==5.20.0
-paho-mqtt==2.1.0
+# Streamlit Cloud / Railway / Render Deployment Requirements
+# Only packages actually imported by app.py are listed here.
+# matplotlib, folium, and streamlit-folium are NOT needed by the
+# main dashboard and were causing cloud build failures (missing
+# system image libraries for Pillow / libjpeg / libpng).
+streamlit>=1.38.0,<2.0.0
+numpy>=1.26.0,<2.0.0
+pandas>=2.2.0,<3.0.0
+plotly>=5.18.0,<6.0.0
+paho-mqtt>=2.1.0,<3.0.0
 cryptography>=41.0.0
-folium>=0.14.0
-streamlit-folium>=0.13.0
 streamlit-autorefresh>=1.0.1
-matplotlib>=3.7.0

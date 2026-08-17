@@ -60,13 +60,12 @@ def get_mqtt_config():
         'use_tls': use_tls
     }
 
-mqtt_config = get_mqtt_config()
-MQTT_BROKER = mqtt_config['broker']
-MQTT_PORT = mqtt_config['port']
-MQTT_USERNAME = mqtt_config['username']
-MQTT_PASSWORD = mqtt_config['password']
-MQTT_USE_TLS = mqtt_config['use_tls']
 MQTT_TOPIC = "qkd/smartcity/data"
+
+def _get_mqtt_settings():
+    """Lazy MQTT config; avoids accessing st.secrets at module-import time."""
+    cfg = get_mqtt_config()
+    return cfg['broker'], cfg['port'], cfg['username'], cfg['password'], cfg['use_tls']
 
 # Simplified BB84 simulation
 class UnifiedBB84:
@@ -167,6 +166,14 @@ class IntegratedSmartCity:
     """Unified sensor simulation within the dashboard process"""
     
     def __init__(self):
+        # Resolve MQTT settings lazily (safe on Streamlit Cloud)
+        broker, port, username, password, use_tls = _get_mqtt_settings()
+        self._mqtt_broker = broker
+        self._mqtt_port = port
+        self._mqtt_username = username
+        self._mqtt_password = password
+        self._mqtt_use_tls = use_tls
+
         self.sensors = {
             'traffic_light': {
                 'id': 'traffic-node-01',
@@ -206,7 +213,7 @@ class IntegratedSmartCity:
         # Seed initial data point
         for name in self.sensors:
             self.simulate_sensor(name)
-        
+    
     def initialize_mqtt(self):
         """Initialize MQTT client for cloud broker connection"""
         try:
@@ -218,11 +225,11 @@ class IntegratedSmartCity:
             except AttributeError:
                 self.mqtt_client = mqtt.Client(client_id=f"qkd-dash-{random.randint(1000, 9999)}")
             
-            if MQTT_USERNAME and MQTT_PASSWORD:
-                self.mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+            if self._mqtt_username and self._mqtt_password:
+                self.mqtt_client.username_pw_set(self._mqtt_username, self._mqtt_password)
             
             # Enable TLS for secure connections if requested
-            if MQTT_USE_TLS or MQTT_PORT == 8883:
+            if self._mqtt_use_tls or self._mqtt_port == 8883:
                 try:
                     self.mqtt_client.tls_set(cert_reqs=ssl.CERT_NONE)
                     self.mqtt_client.tls_insecure_set(True)
@@ -232,7 +239,7 @@ class IntegratedSmartCity:
             self.mqtt_client.on_connect = self._on_mqtt_connect
             self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
             
-            self.mqtt_client.connect_async(MQTT_BROKER, MQTT_PORT, 60)
+            self.mqtt_client.connect_async(self._mqtt_broker, self._mqtt_port, 60)
             self.mqtt_client.loop_start()
             
             return True
@@ -398,7 +405,7 @@ def main():
         st.subheader("📡 MQTT Cloud Broker")
         mqtt_status = "🟢 Connected" if smart_city.mqtt_connected else "🟡 Standalone / Connecting"
         st.write(f"Status: **{mqtt_status}**")
-        st.caption(f"Broker: `{MQTT_BROKER}:{MQTT_PORT}`")
+        st.caption(f"Broker: `{smart_city._mqtt_broker}:{smart_city._mqtt_port}`")
         
         st.divider()
         
