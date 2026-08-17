@@ -11,8 +11,8 @@ gatherUsageStats = false
 serverAddress = "0.0.0.0"
 
 [theme]
-primaryColor = "#1e3a8a"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f8fafc"
-textColor = "#0f172a"
+primaryColor = "#ef4444"
+backgroundColor = "#090d16"
+secondaryBackgroundColor = "#111827"
+textColor = "#f3f4f6"
 font = "sans serif"

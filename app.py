@@ -348,34 +348,65 @@ def main():
         initial_sidebar_state="expanded"
     )
     
-    # Custom CSS for modern visual design
+    # Custom CSS for Dark/Red Security Control Panel design
     st.markdown("""
     <style>
+    /* Global dark aesthetic overrides */
+    .stApp {
+        background-color: #090d16;
+        color: #f3f4f6;
+    }
     .main-header {
-        font-size: 2.3rem;
-        font-weight: 700;
-        color: #1e3a8a;
-        margin-bottom: 0.2rem;
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #f87171;
+        margin-bottom: 0.1rem;
+        text-transform: uppercase;
+    }
+    .sub-header {
+        color: #9ca3af;
+        font-family: monospace;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
     }
     .status-secure {
         color: #10b981;
         font-weight: bold;
+        font-family: monospace;
     }
     .status-compromised {
         color: #ef4444;
         font-weight: bold;
+        font-family: monospace;
     }
     div[data-testid="stMetric"] {
-        background: rgba(240, 244, 248, 0.7);
-        border: 1px solid rgba(203, 213, 225, 0.8);
-        border-radius: 8px;
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-left: 3px solid #ef4444;
+        border-radius: 6px;
         padding: 0.6rem 0.9rem;
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #9ca3af !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #f3f4f6 !important;
+        font-family: monospace;
+    }
+    .stButton > button {
+        border-radius: 4px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    st.markdown('<p class="main-header">🔐 QKD-Secured Smart City IoT Network</p>', unsafe_allow_html=True)
-    st.markdown("*Real-time Quantum Key Distribution (BB84) simulation and IoT payload encryption*")
+    st.markdown('<p class="main-header">🛡️ QKD SECURITY CONTROL CENTER</p>', unsafe_allow_html=True)
+    st.markdown('<p class="sub-header">[ SYSTEM OPERATIONAL ] :: Real-time Quantum Key Distribution (BB84) & IoT Payload Encryption</p>', unsafe_allow_html=True)
     
     # Initialize the integrated system
     if 'smart_city' not in st.session_state:
@@ -386,18 +417,18 @@ def main():
     
     # Sidebar controls
     with st.sidebar:
-        st.header("🎛️ Network Control")
+        st.header("🎛️ SYSTEM CONTROLS")
         
         # Attack simulation
-        st.subheader("⚡ Attack Simulation")
+        st.subheader("⚡ Threat Engine")
         attack_active = smart_city.attack_active
         attack_color = "🔴" if attack_active else "🟢"
         
-        if st.button(f"{attack_color} {'Stop' if attack_active else 'Launch'} Eavesdropping Attack", use_container_width=True, type="primary" if not attack_active else "secondary"):
+        if st.button(f"{attack_color} {'STOP' if attack_active else 'LAUNCH'} EAVESDROPPING ATTACK", use_container_width=True, type="primary" if not attack_active else "secondary"):
             smart_city.toggle_attack()
             st.rerun()
         
-        st.write(f"Channel Security: {'**⚠️ EAVESDROPPER ACTIVE (Intercept-Resend)**' if attack_active else '**✓ Clean Channel (Normal)**'}")
+        st.write(f"Channel Security: {'**⚠️ EAVESDROPPER ACTIVE (Intercept-Resend)**' if attack_active else '**✓ Clean Channel (Secured)**'}")
         
         st.divider()
         
@@ -410,8 +441,8 @@ def main():
         st.divider()
         
         # Manual updates
-        st.subheader("🔄 Update Trigger")
-        if st.button("Generate New Sensor Readings", use_container_width=True):
+        st.subheader("🔄 Telemetry Trigger")
+        if st.button("Generate Sensor Cycle", use_container_width=True):
             smart_city.update_all_sensors()
             st.rerun()
         
@@ -427,7 +458,6 @@ def main():
                 st.rerun()
     
     # Main dashboard area
-    # Sensor status cards
     st.subheader("📡 Monitored IoT Infrastructure")
     
     sensors_info = [
@@ -465,7 +495,7 @@ def main():
                 if sensor['last_key']:
                     st.caption(f"🔑 Derived AES-256 Key: `{sensor['last_key'][:16]}...`")
                 else:
-                    st.caption("🔑 Session Key: *Aborted due to eavesdropping*")
+                    st.caption("🔑 Session Key: *ABORTED (Threshold Exceeded)*")
                 
                 st.caption(f"🕐 Last Cycle: {sensor['last_update'].strftime('%H:%M:%S')}")
     
@@ -491,9 +521,15 @@ def main():
         text='QBER (%)'
     )
     fig_qber.update_traces(texttemplate='%{text:.1f}%', textposition='outside')
-    fig_qber.add_hline(y=11.0, line_dash="dash", line_color="red", 
-                      annotation_text="BB84 Theoretical Abort Limit (11%)")
-    fig_qber.update_layout(height=360, yaxis_range=[0, max(35, df_qber['QBER (%)'].max() + 8)])
+    fig_qber.add_hline(y=11.0, line_dash="dash", line_color="#ef4444", 
+                      annotation_text="BB84 Theoretical Abort Limit (11%)", annotation_font_color="#ef4444")
+    fig_qber.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="#090d16",
+        plot_bgcolor="#111827",
+        height=360, 
+        yaxis_range=[0, max(35, df_qber['QBER (%)'].max() + 8)]
+    )
     st.plotly_chart(fig_qber, use_container_width=True)
     
     # Sensor data trends
@@ -516,7 +552,7 @@ def main():
                     y=df_trend['value'],
                     mode='lines+markers',
                     name='Telemetry Value',
-                    line=dict(color='#2563eb', width=2)
+                    line=dict(color='#3b82f6', width=2)
                 ))
                 
                 # Add QBER trace on secondary axis
@@ -526,10 +562,13 @@ def main():
                     mode='lines+markers',
                     name='QBER (%)',
                     yaxis='y2',
-                    line=dict(color='#dc2626', width=2, dash='dash')
+                    line=dict(color='#ef4444', width=2, dash='dash')
                 ))
                 
                 fig_trend.update_layout(
+                    template="plotly_dark",
+                    paper_bgcolor="#090d16",
+                    plot_bgcolor="#111827",
                     title=f"{icon} - Telemetry Value & QBER Over Time",
                     xaxis_title="Time",
                     yaxis_title="Telemetry Value",
