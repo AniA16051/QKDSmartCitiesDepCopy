@@ -169,13 +169,17 @@ class IntegratedSmartCity:
                 'data_points': [], 'last_update': datetime.now()
             }
         }
-        self.attack_active = False
+        self.attacked_target = "None"  # "None", "All Nodes", "traffic_light", "water_meter", "surveillance"
         self.mqtt_client = None
         self.mqtt_connected = False
         self.terminal_logs = []
         
         for name in self.sensors:
             self.simulate_sensor(name)
+
+    @property
+    def attack_active(self):
+        return self.attacked_target != "None"
     
     def initialize_mqtt(self):
         """Initialize MQTT client for cloud broker connection"""
@@ -229,7 +233,8 @@ class IntegratedSmartCity:
     
     def simulate_sensor(self, sensor_name):
         sensor = self.sensors[sensor_name]
-        qkd_result = UnifiedBB84.simulate_bb84_protocol(key_length=256, attack=self.attack_active)
+        is_attacked = (self.attacked_target == "All Nodes") or (self.attacked_target == sensor_name)
+        qkd_result = UnifiedBB84.simulate_bb84_protocol(key_length=256, attack=is_attacked)
         
         sensor['status'] = 'secure' if qkd_result['success'] else 'compromised'
         sensor['qber'] = qkd_result['qber']
@@ -276,9 +281,13 @@ class IntegratedSmartCity:
         self.publish_sensor_data(sensor_name, sensor_data)
         return sensor_data
     
-    def toggle_attack(self):
-        self.attack_active = not self.attack_active
-        msg = "INTERCEPT-RESEND ATTACK ACTIVATED" if self.attack_active else "CHANNEL RESTORED TO CLEAN STATE"
+    def toggle_attack(self, target="All Nodes"):
+        if self.attacked_target == target:
+            self.attacked_target = "None"
+            msg = f"ATTACK STOPPED :: CHANNEL RESTORED TO CLEAN STATE"
+        else:
+            self.attacked_target = target
+            msg = f"INTERCEPT-RESEND ATTACK ACTIVATED ON {target.upper()}"
         self.log_terminal(f"THREAT ENGINE :: {msg}", "ALERT" if self.attack_active else "INFO")
         self.update_all_sensors()
         return self.attack_active
@@ -510,28 +519,45 @@ def main():
     # ══════════════════════════════════════════════════════════════
     # CONTROL BAR (Centered Row)
     # ══════════════════════════════════════════════════════════════
-    c1, c2, c3, c4 = st.columns([2, 2, 2, 2])
+    c1, c2, c3, c4, c5 = st.columns([2.5, 2.5, 2, 2, 2])
     
+    target_mapping = {
+        "All Nodes": "All Nodes",
+        "Surveillance Camera": "surveillance",
+        "Traffic Signal": "traffic_light",
+        "Water Utility": "water_meter"
+    }
+
     with c1:
-        atk_label = "Stop Attack Simulation" if attack_active else "Simulate Attack"
-        if st.button(
-            f"{'🔴' if attack_active else '🟢'} {atk_label}",
-            use_container_width=True,
-            help="Toggles an intercept-resend (Eve) eavesdropper on the quantum channel. When active, Eve measures each qubit in a random basis and resends it, causing QBER to exceed the 11% BB84 security threshold."
-        ):
-            sc.toggle_attack()
-            st.rerun()
+        selected_target_label = st.selectbox(
+            "Attack Target Node",
+            list(target_mapping.keys()),
+            index=0,
+            help="Select which IoT node to target with the Eve intercept-resend eavesdropping attack."
+        )
+        selected_target_key = target_mapping[selected_target_label]
 
     with c2:
+        is_current_target_attacked = (sc.attacked_target == selected_target_key) or (sc.attacked_target == "All Nodes" and sc.attack_active)
+        atk_label = f"Stop Attack ({sc.attacked_target})" if sc.attack_active else f"Simulate Attack"
         if st.button(
-            "🔄 Execute Telemetry Cycle",
+            f"{'🔴' if sc.attack_active else '🟢'} {atk_label}",
+            use_container_width=True,
+            help="Toggles an intercept-resend (Eve) eavesdropper on the selected quantum channel target. When active, Eve measures each qubit in a random basis and resends it, causing QBER to exceed the 11% BB84 security threshold."
+        ):
+            sc.toggle_attack(target=selected_target_key)
+            st.rerun()
+
+    with c3:
+        if st.button(
+            "🔄 Telemetry Cycle",
             use_container_width=True,
             help="Runs a fresh BB84 key exchange for every sensor node, generates new telemetry readings, and publishes encrypted payloads to the MQTT broker."
         ):
             sc.update_all_sensors()
             st.rerun()
 
-    with c3:
+    with c4:
         refresh = st.selectbox(
             "Auto-Refresh",
             ["Off", "5 seconds", "10 seconds"],
@@ -548,11 +574,12 @@ def main():
                 sc.update_all_sensors()
                 st.rerun()
 
-    with c4:
+    with c5:
+        target_display = f"ACTIVE ({sc.attacked_target})" if sc.attack_active else "SECURED"
         st.metric(
             "Channel State",
-            "COMPROMISED" if attack_active else "SECURED",
-            help="Reflects whether an active eavesdropper (Eve) is present on the quantum channel."
+            target_display,
+            help="Reflects whether an active eavesdropper (Eve) is present on any quantum channel."
         )
     
     st.markdown("---")
