@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: qkd_mosquitto
+    ports:
+      - "0.0.0.0:1883:1883"  # Listen on all interfaces for network access
+      - "0.0.0.0:9001:9001"  # WebSocket access
+    volumes:
+      - ./docker/mosquitto/config:/mosquitto/config
+      - ./docker/mosquitto/data:/mosquitto/data
+      - ./docker/mosquitto/log:/mosquitto/log
+    networks:
+      - qkd_network
+    environment:
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-h", "localhost", "-t", "test"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  admin-node:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.admin
+    container_name: qkd_admin_node
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      - BROKER_HOST=mosquitto
+      - BROKER_PORT=1883
+      - NODE_ID=admin-control-center
+      - NODE_TYPE=admin
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./:/app
+      - ./docker/shared_keystore:/app/network/shared_keystore_data
+    networks:
+      - qkd_network
+    command: python -m network.control_center
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: qkd_dashboard
+    depends_on:
+      - mosquitto
+      - admin-node
+    environment:
+      - BROKER_HOST=mosquitto
+      - BROKER_PORT=1883
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "0.0.0.0:8501:8501"  # Streamlit port, accessible from network
+    volumes:
+      - ./:/app
+      - ./docker/shared_keystore:/app/network/shared_keystore_data
+    networks:
+      - qkd_network
+    command: streamlit run dashboard/app_enhanced.py --logger.level=warning --server.address=0.0.0.0
+    restart: unless-stopped
+
+  # User nodes template (for reference; use docker-compose run for actual user nodes)
+  # Example: docker-compose run -d --name user-node-1 user-node-template python -m network.sensor_node --id traffic-1 --type traffic_flow
+  user-node-template:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.user
+    environment:
+      - BROKER_HOST=mosquitto
+      - BROKER_PORT=1883
+      - TZ=UTC
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./:/app
+      - ./docker/shared_keystore:/app/network/shared_keystore_data
+    networks:
+      - qkd_network
+    command: python -m network.sensor_node --id default-node --type traffic_flow
+
+networks:
+  qkd_network:
+    driver: bridge
+
+volumes:
+  mosquitto_data:
+    driver: local
+  mosquitto_log:
+    driver: local
+  shared_keystore:
+    driver: local

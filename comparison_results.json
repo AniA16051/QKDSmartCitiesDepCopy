@@ -1,0 +1,23 @@
+{
+  "RSA-2048": {
+    "avg_time_ms": 80.22723960002622,
+    "min_time_ms": 30.82545899815159,
+    "max_time_ms": 145.8241670006828,
+    "avg_wire_bytes": 256.0,
+    "trials": 20
+  },
+  "ECDH-P256": {
+    "avg_time_ms": 0.3324187000544043,
+    "min_time_ms": 0.2103750048263464,
+    "max_time_ms": 2.401540998107521,
+    "avg_wire_bytes": 130.0,
+    "trials": 20
+  },
+  "BB84 (QKD)": {
+    "avg_time_ms": 79.86694165065273,
+    "min_time_ms": 75.23845800096751,
+    "max_time_ms": 92.94491599939647,
+    "avg_wire_bytes": 512.0,
+    "trials": 20
+  }
+}
