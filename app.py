@@ -306,7 +306,7 @@ class IntegratedSmartCity:
 def main():
     st.set_page_config(
         page_title="QKD Cyber Defense Operations Center",
-        page_icon="🛡️",
+        page_icon="Q",
         layout="wide",
         initial_sidebar_state="collapsed"
     )
@@ -539,9 +539,9 @@ def main():
 
     with c2:
         is_current_target_attacked = (sc.attacked_target == selected_target_key) or (sc.attacked_target == "All Nodes" and sc.attack_active)
-        atk_label = f"Stop Attack ({sc.attacked_target})" if sc.attack_active else f"Simulate Attack"
+        atk_label = f"STOP ATTACK ({sc.attacked_target.upper()})" if sc.attack_active else f"SIMULATE ATTACK"
         if st.button(
-            f"{'🔴' if sc.attack_active else '🟢'} {atk_label}",
+            atk_label,
             use_container_width=True,
             help="Toggles an intercept-resend (Eve) eavesdropper on the selected quantum channel target. When active, Eve measures each qubit in a random basis and resends it, causing QBER to exceed the 11% BB84 security threshold."
         ):
@@ -550,7 +550,7 @@ def main():
 
     with c3:
         if st.button(
-            "🔄 Telemetry Cycle",
+            "EXECUTE TELEMETRY CYCLE",
             use_container_width=True,
             help="Runs a fresh BB84 key exchange for every sensor node, generates new telemetry readings, and publishes encrypted payloads to the MQTT broker."
         ):
@@ -583,6 +583,26 @@ def main():
         )
     
     st.markdown("---")
+    
+    # ══════════════════════════════════════════════════════════════
+    # THREAT REMEDIATION & FAILSAFES (Conditional)
+    # ══════════════════════════════════════════════════════════════
+    if sc.attack_active:
+        st.markdown('<div class="section-hdr" style="color: var(--accent-amber);">Active Countermeasures & Failsafes</div>', unsafe_allow_html=True)
+        fc1, fc2, fc3 = st.columns([1, 1, 2])
+        with fc1:
+            if st.button("INITIATE QUANTUM REROUTING", use_container_width=True, help="Bypass the compromised channel and reroute quantum transmission via a secondary secure path."):
+                sc.log_terminal(f"FAILSAFE :: QUANTUM REROUTING INITIATED FOR {sc.attacked_target.upper()}", "SECURE")
+                sc.toggle_attack(target=sc.attacked_target)
+                st.rerun()
+        with fc2:
+            if st.button("PROVISION STANDBY NODE", use_container_width=True, help="Spin up a cold-spare node to maintain network continuity while the primary node is isolated."):
+                sc.log_terminal(f"FAILSAFE :: STANDBY NODE PROVISIONED. NETWORK CONTINUITY MAINTAINED.", "SECURE")
+                sc.toggle_attack(target=sc.attacked_target)
+                st.rerun()
+        with fc3:
+            st.markdown(f'<div style="color: var(--accent-red); font-family: \'JetBrains Mono\', monospace; font-size: 0.8rem; padding-top: 10px;">&gt; Node \'{sc.attacked_target}\' is compromised. Awaiting manual remediation.</div>', unsafe_allow_html=True)
+        st.markdown("---")
     
     # ══════════════════════════════════════════════════════════════
     # NODE STATUS CARDS (3-Column)
