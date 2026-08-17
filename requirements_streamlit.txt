@@ -1,7 +1,5 @@
-# Requirements for Streamlit Cloud deployment
-# Free forever deployment with minimal dependencies
-streamlit>=1.40,<2
-numpy>=1.26,<3
-pandas>=2.1,<3
-plotly>=5.20,<7
-paho-mqtt>=2.1,<3
+streamlit==1.40.0
+numpy==1.26.4
+pandas==2.2.2
+plotly==5.20.0
+paho-mqtt==2.1.0
