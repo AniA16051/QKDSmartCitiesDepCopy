@@ -102,7 +102,10 @@ def init_session_state():
         )
         broker_host = os.getenv("BROKER_HOST", "localhost")
         broker_port = int(os.getenv("BROKER_PORT", "1883"))
-        st.session_state.mqtt_client.connect(broker_host, broker_port, keepalive=60)
+        # connect_async keeps the web server available while the broker service
+        # is starting (especially important on Railway, which has no Compose
+        # startup ordering).
+        st.session_state.mqtt_client.connect_async(broker_host, broker_port, keepalive=60)
         st.session_state.mqtt_client.loop_start()
 
 
@@ -156,8 +159,8 @@ def render_login_page():
         st.markdown("""
         ---
         **Demo Credentials:**
-        - **Admin:** admin / admin@qkd2026
-        - **User:** user / user@qkd2026
+            - **Admin:** `admin` / the `QKD_ADMIN_PASSWORD` deployment variable
+            - **User:** `user` / the `QKD_USER_PASSWORD` deployment variable
         """)
 
 

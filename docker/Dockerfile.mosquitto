@@ -1,0 +1,5 @@
+FROM eclipse-mosquitto:2
+
+# The broker is internal-only on Railway. The dashboard and worker connect to
+# it over Railway private networking; no public MQTT port is required.
+COPY --chown=mosquitto:mosquitto docker/mosquitto/config/mosquitto.conf /mosquitto/config/mosquitto.conf

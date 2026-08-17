@@ -1,12 +1,9 @@
-version: '3.8'
-
 services:
   mosquitto:
     image: eclipse-mosquitto:latest
-    container_name: qkd_mosquitto
     ports:
-      - "0.0.0.0:1883:1883"  # Listen on all interfaces for network access
-      - "0.0.0.0:9001:9001"  # WebSocket access
+      - "1883:1883"  # Railway handles networking automatically
+      - "9001:9001"  # WebSocket access
     volumes:
       - ./docker/mosquitto/config:/mosquitto/config
       - ./docker/mosquitto/data:/mosquitto/data
@@ -25,7 +22,6 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.admin
-    container_name: qkd_admin_node
     depends_on:
       mosquitto:
         condition: service_healthy
@@ -53,7 +49,6 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.dashboard
-    container_name: qkd_dashboard
     depends_on:
       - mosquitto
       - admin-node
@@ -63,13 +58,13 @@ services:
       - TZ=UTC
       - PYTHONUNBUFFERED=1
     ports:
-      - "0.0.0.0:8501:8501"  # Streamlit port, accessible from network
+      - "${DASHBOARD_PORT:-8501}:8501"  # Streamlit port
     volumes:
       - ./:/app
       - ./docker/shared_keystore:/app/network/shared_keystore_data
     networks:
       - qkd_network
-    command: streamlit run dashboard/app_enhanced.py --logger.level=warning --server.address=0.0.0.0
+    command: sh -c 'streamlit run dashboard/app_enhanced.py --logger.level=warning --server.address=0.0.0.0 --server.port=$${PORT:-8501}'
     restart: unless-stopped
 
   # User nodes template (for reference; use docker-compose run for actual user nodes)

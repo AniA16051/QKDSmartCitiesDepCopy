@@ -30,13 +30,19 @@ class AuthManager:
     """Manages user authentication and authorization"""
     
     # Default users (in production, use a database)
+    # Set these variables in the deployment platform. The fallback values make
+    # local development work, but must not be used on an Internet-facing app.
     DEFAULT_USERS = {
         'admin': {
-            'password_hash': hashlib.sha256('admin@qkd2026'.encode()).hexdigest(),
+            'password_hash': hashlib.sha256(
+                os.getenv('QKD_ADMIN_PASSWORD', 'admin@qkd2026').encode()
+            ).hexdigest(),
             'role': 'admin'
         },
         'user': {
-            'password_hash': hashlib.sha256('user@qkd2026'.encode()).hexdigest(),
+            'password_hash': hashlib.sha256(
+                os.getenv('QKD_USER_PASSWORD', 'user@qkd2026').encode()
+            ).hexdigest(),
             'role': 'user'
         }
     }

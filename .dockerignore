@@ -1,0 +1,16 @@
+.git
+.agents
+.env
+.venv
+venv
+__pycache__
+*.py[cod]
+*.zip
+*.png
+*.md
+docker/mosquitto/data
+docker/mosquitto/log
+docker/shared_keystore
+dashboard/.users.json
+network/.keystore.json
+network/shared_keystore_data
