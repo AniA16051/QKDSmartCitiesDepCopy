@@ -5,6 +5,15 @@ Merges sensor nodes, control center, and dashboard into a single process
 Uses free cloud MQTT broker for communication
 """
 
+import os
+import sys
+
+# Disable file watching in production to prevent inotify limit errors
+# This fixes deployment issues on cloud platforms like Render
+if os.getenv("RENDER") or os.getenv("VERCEL") or os.getenv("RAILWAY"):
+    os.environ["STREAMLIT_SERVER_FILE_WATCHER_TYPE"] = "none"
+    os.environ["STREAMLIT_LOGGER_LEVEL"] = "warning"
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -18,15 +27,40 @@ import time
 import threading
 import ssl
 import paho.mqtt.client as mqtt
-import os
 
 # Configuration for free cloud MQTT broker
 # Using EMQX Cloud Serverless (free tier) or similar
-MQTT_BROKER = os.getenv("MQTT_BROKER", "broker.emqx.io")  # Free public broker
-MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
-MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
-MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
-MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false").lower() == "true"
+# Supports both environment variables and Streamlit secrets
+def get_mqtt_config():
+    """Get MQTT configuration from environment or Streamlit secrets"""
+    try:
+        # Try Streamlit secrets first (for Streamlit Cloud)
+        if hasattr(st, 'secrets'):
+            return {
+                'broker': st.secrets.get('MQTT_BROKER', os.getenv("MQTT_BROKER", "broker.emqx.io")),
+                'port': int(st.secrets.get('MQTT_PORT', os.getenv("MQTT_PORT", 1883))),
+                'username': st.secrets.get('MQTT_USERNAME', os.getenv("MQTT_USERNAME", "")),
+                'password': st.secrets.get('MQTT_PASSWORD', os.getenv("MQTT_PASSWORD", "")),
+                'use_tls': st.secrets.get('MQTT_USE_TLS', os.getenv("MQTT_USE_TLS", "false")) == "true"
+            }
+    except:
+        pass
+    
+    # Fallback to environment variables
+    return {
+        'broker': os.getenv("MQTT_BROKER", "broker.emqx.io"),
+        'port': int(os.getenv("MQTT_PORT", 1883)),
+        'username': os.getenv("MQTT_USERNAME", ""),
+        'password': os.getenv("MQTT_PASSWORD", ""),
+        'use_tls': os.getenv("MQTT_USE_TLS", "false").lower() == "true"
+    }
+
+mqtt_config = get_mqtt_config()
+MQTT_BROKER = mqtt_config['broker']
+MQTT_PORT = mqtt_config['port']
+MQTT_USERNAME = mqtt_config['username']
+MQTT_PASSWORD = mqtt_config['password']
+MQTT_USE_TLS = mqtt_config['use_tls']
 MQTT_TOPIC = "qkd/smartcity/data"
 
 # Simplified BB84 simulation

@@ -1,12 +1,9 @@
-[general]
-title = "QKD Smart City Dashboard"
-enableCORS = false
-enableXsrfProtection = true
-
 [server]
 port = 8501
 headless = true
 enableWebsocketCompression = false
+enableCORS = false
+enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false

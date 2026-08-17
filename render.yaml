@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: qkd-smart-city-dashboard
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.headless=true --server.port=8501 --server.fileWatcherType=none
+    envVars:
+      - key: STREAMLIT_SERVER_FILE_WATCHER_TYPE
+        value: none
+      - key: STREAMLIT_LOGGER_LEVEL
+        value: warning
+      - key: MQTT_BROKER
+        sync: false
+      - key: MQTT_PORT
+        value: "8883"
+      - key: MQTT_USERNAME
+        sync: false
+      - key: MQTT_PASSWORD
+        sync: false
+      - key: MQTT_USE_TLS
+        value: "true"
