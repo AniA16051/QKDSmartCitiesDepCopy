@@ -1,0 +1,27 @@
+# Free remote-access mode for a demo running on your own computer.
+# Start with:
+#   docker compose --env-file .env -f docker-compose.yml -f docker-compose.tunnel.yml up -d --build
+# Then retrieve the temporary public URL with:
+#   docker compose -f docker-compose.yml -f docker-compose.tunnel.yml logs cloudflared
+
+services:
+  # Keep all application ports off the local network. Cloudflare Tunnel is the
+  # only public entry point and forwards traffic to dashboard over Docker DNS.
+  mosquitto:
+    ports: !reset []
+
+  dashboard:
+    ports: !reset []
+    environment:
+      QKD_ADMIN_PASSWORD: ${QKD_ADMIN_PASSWORD:?Set QKD_ADMIN_PASSWORD in .env}
+      QKD_USER_PASSWORD: ${QKD_USER_PASSWORD:?Set QKD_USER_PASSWORD in .env}
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://dashboard:8501
+    depends_on:
+      dashboard:
+        condition: service_started
+    networks:
+      - qkd_network
+    restart: unless-stopped
