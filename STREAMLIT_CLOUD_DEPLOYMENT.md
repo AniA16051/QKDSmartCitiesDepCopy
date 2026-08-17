@@ -67,19 +67,20 @@ The app works with the default free public broker, but you can configure your ow
 
 1. **Sign up at [cloud.emqx.com](https://cloud.emqx.com)**
 2. **Create a Serverless deployment** (free tier)
-3. **Get connection details:**
-   - Broker host (e.g., `your-instance.emqxsl.com`)
-   - Port (usually 8883 for TLS, 1883 for non-TLS)
-   - Username/password (create in Authentication settings)
+3. **Get connection details from Deployment Overview:**
+   - Broker address (from MQTT Connection Information)
+   - Port: `8883` (TLS/SSL) or `8084` (WebSocket TLS)
+   - Username/password (from Access Control)
 
 4. **Add environment variables in Streamlit Cloud:**
    - Go to your app → Settings → Secrets
    - Add these secrets:
      ```
-     MQTT_BROKER=your-instance.emqxsl.com
+     MQTT_BROKER=your-emqx-broker-address
      MQTT_PORT=8883
      MQTT_USERNAME=your-username
      MQTT_PASSWORD=your-password
+     MQTT_USE_TLS=true
      ```
 
 ### 4. Access Your Dashboard
@@ -98,9 +99,10 @@ Configure these in Streamlit Cloud → Settings → Secrets:
 ```bash
 # MQTT Broker Configuration
 MQTT_BROKER=broker.emqx.io          # Default free public broker
-MQTT_PORT=1883                      # Default port
+MQTT_PORT=1883                      # Default port (use 8883 for TLS)
 MQTT_USERNAME=                      # Leave empty for public broker
 MQTT_PASSWORD=                      # Leave empty for public broker
+MQTT_USE_TLS=false                  # Set to true for EMQX Cloud (port 8883)
 ```
 
 ### Streamlit Configuration

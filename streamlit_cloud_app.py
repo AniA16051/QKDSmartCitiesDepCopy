@@ -16,6 +16,7 @@ import json
 import random
 import time
 import threading
+import ssl
 import paho.mqtt.client as mqtt
 import os
 
@@ -25,6 +26,7 @@ MQTT_BROKER = os.getenv("MQTT_BROKER", "broker.emqx.io")  # Free public broker
 MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME", "")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_USE_TLS = os.getenv("MQTT_USE_TLS", "false").lower() == "true"
 MQTT_TOPIC = "qkd/smartcity/data"
 
 # Simplified BB84 simulation
@@ -168,6 +170,11 @@ class IntegratedSmartCity:
             
             if MQTT_USERNAME and MQTT_PASSWORD:
                 self.mqtt_client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+            
+            # Enable TLS for secure connections
+            if MQTT_USE_TLS or MQTT_PORT == 8883:
+                self.mqtt_client.tls_set(ca_certs=None, certfile=None, keyfile=None, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLS_CLIENT)
+                self.mqtt_client.tls_insecure_set(True)  # For demo purposes
             
             self.mqtt_client.on_connect = self._on_mqtt_connect
             self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
