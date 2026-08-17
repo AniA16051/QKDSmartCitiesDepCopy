@@ -1,5 +1,10 @@
-﻿import asyncio
-from amqtt.broker import Broker
+import asyncio
+
+try:
+    from amqtt.broker import Broker
+    _AMQTT_AVAILABLE = True
+except ImportError:
+    _AMQTT_AVAILABLE = False
 
 config = {
     'listeners': {
@@ -16,6 +21,9 @@ config = {
 }
 
 async def start_broker():
+    if not _AMQTT_AVAILABLE:
+        print("amqtt is not installed. For local development, please use Mosquitto (e.g. 'docker compose up mosquitto') or a cloud broker like broker.emqx.io.")
+        return
     broker = Broker(config)
     await broker.start()
     print("Broker running on localhost:1883 (TCP)...")

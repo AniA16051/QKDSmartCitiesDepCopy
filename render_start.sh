@@ -1,9 +1,14 @@
-#!/bin/bash
-# Render deployment script for Streamlit with file watching disabled
+#!/usr/bin/env bash
+# Render deployment script for Streamlit with dynamic port binding and file watching disabled
 
-# Set environment variables to disable file watching
+set -e
+
 export STREAMLIT_SERVER_FILE_WATCHER_TYPE="none"
 export STREAMLIT_LOGGER_LEVEL="warning"
+export STREAMLIT_SERVER_HEADLESS="true"
+export STREAMLIT_SERVER_ADDRESS="0.0.0.0"
 
-# Run Streamlit with file watching disabled
-streamlit run app.py --server.headless=true --server.port=8501 --logger.level=warning
+PORT="${PORT:-8501}"
+
+# Run Streamlit with dynamic port binding
+streamlit run app.py --server.headless=true --server.address=0.0.0.0 --server.port="${PORT}" --server.fileWatcherType=none --logger.level=warning

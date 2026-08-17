@@ -1,6 +1,7 @@
 [server]
 port = 8501
 headless = true
+fileWatcherType = "none"
 enableWebsocketCompression = false
 enableCORS = false
 enableXsrfProtection = true
@@ -10,8 +11,8 @@ gatherUsageStats = false
 serverAddress = "0.0.0.0"
 
 [theme]
-primaryColor = "#1f77b4"
+primaryColor = "#1e3a8a"
 backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f0f2f6"
-textColor = "#262730"
+secondaryBackgroundColor = "#f8fafc"
+textColor = "#0f172a"
 font = "sans serif"

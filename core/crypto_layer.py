@@ -46,7 +46,7 @@ def decrypt_payload(key_bytes, encrypted_dict):
 
 
 if __name__ == "__main__":
-    from bb84 import run_bb84
+    from core.bb84 import run_bb84
 
     result = run_bb84(n_qubits=1024, eavesdropper=False)
     print(f"Final QKD key length: {len(result['final_key'])} bits")

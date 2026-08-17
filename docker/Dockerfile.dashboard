@@ -2,6 +2,16 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_RETRIES=10 \
+    PIP_DEFAULT_TIMEOUT=120 \
+    STREAMLIT_SERVER_FILE_WATCHER_TYPE=none \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0
+
 # Copy requirements
 COPY requirements.txt .
 
@@ -17,5 +27,5 @@ EXPOSE 8501
 # Health check
 HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health || exit 1
 
-# Default command (can be overridden)
-CMD ["sh", "-c", "streamlit run dashboard/app_enhanced.py --logger.level=warning --server.address=0.0.0.0 --server.port=${PORT:-8501}"]
+# Default command
+CMD ["sh", "-c", "streamlit run app.py --logger.level=warning --server.address=0.0.0.0 --server.port=${PORT:-8501} --server.headless=true --server.fileWatcherType=none"]
