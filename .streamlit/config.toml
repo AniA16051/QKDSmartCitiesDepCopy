@@ -1,0 +1,20 @@
+[general]
+title = "QKD Smart City Dashboard"
+enableCORS = false
+enableXsrfProtection = true
+
+[server]
+port = 8501
+headless = true
+enableWebsocketCompression = false
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+
+[theme]
+primaryColor = "#1f77b4"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#262730"
+font = "sans serif"
