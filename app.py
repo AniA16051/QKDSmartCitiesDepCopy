@@ -298,6 +298,20 @@ class IntegratedSmartCity:
             results[sensor_name] = self.simulate_sensor(sensor_name)
         return results
 
+    def ping_node(self, sensor_name):
+        """Simulate a cryptographic challenge-response ping"""
+        sensor = self.sensors[sensor_name]
+        nonce = hashlib.sha256(str(time.time()).encode()).hexdigest()[:16].upper()
+        
+        if sensor['status'] == 'secure' and sensor['last_key']:
+            self.log_terminal(f"PING :: [ {sensor['id']} ] CRYPTOGRAPHIC CHALLENGE (NONCE: {nonce})", "INFO")
+            self.log_terminal(f"PING OK :: [ {sensor['id']} ] RESPONSE ENCRYPTED WITH KEY {sensor['last_key'][:8]}...", "SECURE")
+            return True
+        else:
+            self.log_terminal(f"PING :: [ {sensor['id']} ] CRYPTOGRAPHIC CHALLENGE (NONCE: {nonce})", "INFO")
+            self.log_terminal(f"PING FAILED :: [ {sensor['id']} ] NO VALID KEY TO ENCRYPT CHALLENGE", "WARN")
+            return False
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # STREAMLIT UI — Cyber Defense Operations Center
@@ -640,6 +654,14 @@ def main():
                     st.code(f"AES-256 Key: {s['last_key'][:12]}...{s['last_key'][-6:]}", language=None)
                 else:
                     st.code("AES-256 Key: ABORTED — threshold exceeded", language=None)
+                
+                if st.button("CRYPTOGRAPHIC PING", key=f"ping_{key}", use_container_width=True, help="Send a cryptographic challenge to this node. It must encrypt the response using its valid AES-256 key."):
+                    success = sc.ping_node(key)
+                    if success:
+                        st.toast(f"Ping OK for {s['id']}", icon="✅")
+                    else:
+                        st.toast(f"Ping FAILED for {s['id']}", icon="❌")
+                    st.rerun()
                 
                 if s['data_points']:
                     val = s['data_points'][-1]['value']
