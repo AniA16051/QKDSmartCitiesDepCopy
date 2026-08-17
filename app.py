@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
 Unified QKD Dashboard for Streamlit Cloud, Render, and Railway Deployment
-High-Density Cyber Defense Operations Center (SOC) Interface
-Inspired by Bloomberg Terminal, Databricks, and Palantir Gotham
+Cyber Defense Operations Center (SOC) Interface
 """
 
 import os
@@ -85,78 +84,54 @@ class UnifiedBB84:
         Simulate complete BB84 protocol
         Returns: dict with protocol results
         """
-        # Alice's key and bases
         alice_key = UnifiedBB84.generate_key(key_length)
         alice_bases = UnifiedBB84.generate_bases(key_length)
-        
-        # Bob's bases (random)
         bob_bases = UnifiedBB84.generate_bases(key_length)
-        
-        # Bob's measurements (with or without attack)
         bob_key = np.zeros(key_length, dtype=int)
         
         if attack:
-            # Eve intercepts and resends (intercept-resend attack)
             eve_bases = UnifiedBB84.generate_bases(key_length)
             eve_key = np.zeros(key_length, dtype=int)
-            
-            # Eve measures
             for i in range(key_length):
                 if alice_bases[i] == eve_bases[i]:
                     eve_key[i] = alice_key[i]
                 else:
                     eve_key[i] = random.randint(0, 1)
-            
-            # Eve resends to Bob
             for i in range(key_length):
                 if eve_bases[i] == bob_bases[i]:
                     bob_key[i] = eve_key[i]
                 else:
                     bob_key[i] = random.randint(0, 1)
         else:
-            # Direct transmission to Bob
             for i in range(key_length):
                 if alice_bases[i] == bob_bases[i]:
                     bob_key[i] = alice_key[i]
                 else:
                     bob_key[i] = random.randint(0, 1)
         
-        # Sifting - keep only matching bases
         matching_bases = (alice_bases == bob_bases)
         sifted_alice = alice_key[matching_bases]
         sifted_bob = bob_key[matching_bases]
         
         if len(sifted_alice) == 0:
             return {
-                'success': False,
-                'qber': 100.0,
-                'sifted_length': 0,
-                'final_key': None,
-                'attack_detected': True,
-                'raw_length': key_length
+                'success': False, 'qber': 100.0, 'sifted_length': 0,
+                'final_key': None, 'attack_detected': True, 'raw_length': key_length
             }
         
-        # Calculate QBER (Quantum Bit Error Rate)
         errors = np.sum(sifted_alice != sifted_bob)
         qber = (errors / len(sifted_alice)) * 100.0
-        
-        # Security threshold: 11%
         attack_detected = qber >= 11.0
         success = not attack_detected and len(sifted_alice) >= 32
         
-        # Key derivation using SHA-256
         final_key = None
         if success:
             bit_string = ''.join(map(str, sifted_alice))
             final_key = hashlib.sha256(bit_string.encode()).hexdigest()
         
         return {
-            'success': success,
-            'qber': qber,
-            'sifted_length': len(sifted_alice),
-            'final_key': final_key,
-            'attack_detected': attack_detected,
-            'raw_length': key_length
+            'success': success, 'qber': qber, 'sifted_length': len(sifted_alice),
+            'final_key': final_key, 'attack_detected': attack_detected, 'raw_length': key_length
         }
 
 # Integrated Smart City Simulation
@@ -164,7 +139,6 @@ class IntegratedSmartCity:
     """Unified sensor simulation within the dashboard process"""
     
     def __init__(self):
-        # Resolve MQTT settings lazily
         broker, port, username, password, use_tls = _get_mqtt_settings()
         self._mqtt_broker = broker
         self._mqtt_port = port
@@ -174,40 +148,25 @@ class IntegratedSmartCity:
 
         self.sensors = {
             'traffic_light': {
-                'id': 'NODE-TRF-01',
-                'type': 'traffic_flow',
+                'id': 'NODE-TRF-01', 'type': 'traffic_flow',
                 'location': 'Main St & 5th Ave',
-                'lat': 12.9756,
-                'lon': 77.6006,
-                'status': 'secure',
-                'qber': 0.0,
-                'last_key': None,
-                'data_points': [],
-                'last_update': datetime.now()
+                'lat': 12.9756, 'lon': 77.6006,
+                'status': 'secure', 'qber': 0.0, 'last_key': None,
+                'data_points': [], 'last_update': datetime.now()
             },
             'water_meter': {
-                'id': 'NODE-WTR-01', 
-                'type': 'water_consumption',
+                'id': 'NODE-WTR-01', 'type': 'water_consumption',
                 'location': 'Downtown Reservoir',
-                'lat': 12.9698,
-                'lon': 77.5910,
-                'status': 'secure',
-                'qber': 0.0,
-                'last_key': None,
-                'data_points': [],
-                'last_update': datetime.now()
+                'lat': 12.9698, 'lon': 77.5910,
+                'status': 'secure', 'qber': 0.0, 'last_key': None,
+                'data_points': [], 'last_update': datetime.now()
             },
             'surveillance': {
-                'id': 'NODE-CAM-01',
-                'type': 'security_monitoring',
+                'id': 'NODE-CAM-01', 'type': 'security_monitoring',
                 'location': 'Central Park North',
-                'lat': 12.9741,
-                'lon': 77.5983,
-                'status': 'secure',
-                'qber': 0.0,
-                'last_key': None,
-                'data_points': [],
-                'last_update': datetime.now()
+                'lat': 12.9741, 'lon': 77.5983,
+                'status': 'secure', 'qber': 0.0, 'last_key': None,
+                'data_points': [], 'last_update': datetime.now()
             }
         }
         self.attack_active = False
@@ -215,7 +174,6 @@ class IntegratedSmartCity:
         self.mqtt_connected = False
         self.terminal_logs = []
         
-        # Seed initial data point
         for name in self.sensors:
             self.simulate_sensor(name)
     
@@ -224,7 +182,7 @@ class IntegratedSmartCity:
         try:
             try:
                 self.mqtt_client = mqtt.Client(
-                    mqtt.CallbackAPIVersion.VERSION2, 
+                    mqtt.CallbackAPIVersion.VERSION2,
                     client_id=f"qkd-dash-{random.randint(1000, 9999)}"
                 )
             except AttributeError:
@@ -242,62 +200,42 @@ class IntegratedSmartCity:
             
             self.mqtt_client.on_connect = self._on_mqtt_connect
             self.mqtt_client.on_disconnect = self._on_mqtt_disconnect
-            
             self.mqtt_client.connect_async(self._mqtt_broker, self._mqtt_port, 60)
             self.mqtt_client.loop_start()
-            
             return True
-            
-        except Exception as e:
+        except Exception:
             return False
     
     def _on_mqtt_connect(self, client, userdata, flags, rc, properties=None):
-        """MQTT connection callback"""
-        if rc == 0:
-            self.mqtt_connected = True
-        else:
-            self.mqtt_connected = False
+        self.mqtt_connected = (rc == 0)
     
     def _on_mqtt_disconnect(self, client, userdata, rc, properties=None):
-        """MQTT disconnection callback"""
         self.mqtt_connected = False
     
     def publish_sensor_data(self, sensor_name, data):
-        """Publish sensor data to MQTT broker"""
         if self.mqtt_connected and self.mqtt_client:
             try:
-                topic = f"{MQTT_TOPIC}/{sensor_name}"
-                payload = json.dumps(data)
-                self.mqtt_client.publish(topic, payload)
+                self.mqtt_client.publish(f"{MQTT_TOPIC}/{sensor_name}", json.dumps(data))
                 return True
             except Exception:
                 return False
         return False
     
     def log_terminal(self, msg, level="INFO"):
-        """Add timestamped terminal message"""
-        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-        self.terminal_logs.append(f"[{timestamp}] [{level}] {msg}")
-        if len(self.terminal_logs) > 40:
-            self.terminal_logs = self.terminal_logs[-40:]
+        ts = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        self.terminal_logs.append({"ts": ts, "level": level, "msg": msg})
+        if len(self.terminal_logs) > 50:
+            self.terminal_logs = self.terminal_logs[-50:]
     
     def simulate_sensor(self, sensor_name):
-        """Run complete sensor simulation with QKD and data generation"""
         sensor = self.sensors[sensor_name]
+        qkd_result = UnifiedBB84.simulate_bb84_protocol(key_length=256, attack=self.attack_active)
         
-        # Run BB84 protocol
-        qkd_result = UnifiedBB84.simulate_bb84_protocol(
-            key_length=256, 
-            attack=self.attack_active
-        )
-        
-        # Update sensor status
         sensor['status'] = 'secure' if qkd_result['success'] else 'compromised'
         sensor['qber'] = qkd_result['qber']
         sensor['last_key'] = qkd_result['final_key']
         sensor['last_update'] = datetime.now()
         
-        # Generate sensor data based on type
         if sensor['type'] == 'traffic_flow':
             data_value = random.randint(10, 100)
             data_unit = 'cars/min'
@@ -309,29 +247,29 @@ class IntegratedSmartCity:
             data_unit = 'state'
         
         sensor_data = {
-            'sensor_id': sensor['id'],
-            'sensor_type': sensor['type'],
-            'location': sensor['location'],
-            'timestamp': datetime.now().isoformat(),
-            'value': data_value,
-            'unit': data_unit,
-            'qkd_status': sensor['status'],
-            'qber': sensor['qber'],
+            'sensor_id': sensor['id'], 'sensor_type': sensor['type'],
+            'location': sensor['location'], 'timestamp': datetime.now().isoformat(),
+            'value': data_value, 'unit': data_unit,
+            'qkd_status': sensor['status'], 'qber': sensor['qber'],
             'key_preview': sensor['last_key'][:8] + '...' if sensor['last_key'] else None
         }
         
-        # Log entry for cryptographic terminal
         if sensor['status'] == 'secure':
-            self.log_terminal(f"BB84 HANDSHAKE OK :: {sensor['id']} :: QBER={sensor['qber']:.1f}% :: AES-256 HASH={sensor['last_key'][:8]}...{sensor['last_key'][-4:]}", "SECURE")
+            self.log_terminal(
+                f"BB84 OK  {sensor['id']}  QBER={sensor['qber']:.1f}%  KEY={sensor['last_key'][:8]}...{sensor['last_key'][-4:]}",
+                "SECURE"
+            )
         else:
-            self.log_terminal(f"BB84 ABORT DETECTED :: {sensor['id']} :: QBER={sensor['qber']:.1f}% >= 11.0% :: KEY DESTROYED", "WARN")
+            self.log_terminal(
+                f"BB84 ABORT  {sensor['id']}  QBER={sensor['qber']:.1f}% >= 11.0%  KEY DESTROYED",
+                "WARN"
+            )
         
         sensor['data_points'].append({
             'time': datetime.now(),
             'value': data_value if isinstance(data_value, (int, float)) else (1 if data_value == 'MOTION_DET' else 0),
             'qber': sensor['qber']
         })
-        
         if len(sensor['data_points']) > 25:
             sensor['data_points'] = sensor['data_points'][-25:]
         
@@ -339,457 +277,556 @@ class IntegratedSmartCity:
         return sensor_data
     
     def toggle_attack(self):
-        """Toggle eavesdropping attack on all sensors"""
         self.attack_active = not self.attack_active
-        status_msg = "INTERCEPT-RESEND EAVESDROPPER ACTIVATED" if self.attack_active else "CHANNEL RESTORED TO CLEAN STATE"
-        self.log_terminal(f"THREAT ENGINE :: {status_msg}", "ALERT" if self.attack_active else "INFO")
+        msg = "INTERCEPT-RESEND ATTACK ACTIVATED" if self.attack_active else "CHANNEL RESTORED TO CLEAN STATE"
+        self.log_terminal(f"THREAT ENGINE :: {msg}", "ALERT" if self.attack_active else "INFO")
         self.update_all_sensors()
         return self.attack_active
     
     def update_all_sensors(self):
-        """Update all sensors with new simulations"""
         results = {}
         for sensor_name in self.sensors.keys():
             results[sensor_name] = self.simulate_sensor(sensor_name)
         return results
 
-# Streamlit Cyber Operations Center UI
+
+# ═══════════════════════════════════════════════════════════════════════
+# STREAMLIT UI — Cyber Defense Operations Center
+# ═══════════════════════════════════════════════════════════════════════
+
 def main():
     st.set_page_config(
-        page_title="CYBER DEFENSE OPERATIONS CENTER | QKD SOC",
+        page_title="QKD Cyber Defense Operations Center",
         page_icon="🛡️",
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="collapsed"
     )
     
-    # Industrial Monospace CSS Design System
+    # ── CSS Design System ──
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
-    * {
-        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace !important;
+    :root {
+        --bg-canvas: #080B10;
+        --bg-panel: #0E131F;
+        --bg-card: #111827;
+        --border: #1E293B;
+        --border-subtle: #162032;
+        --text-primary: #F1F5F9;
+        --text-secondary: #94A3B8;
+        --text-muted: #64748B;
+        --accent-cyan: #06B6D4;
+        --accent-green: #10B981;
+        --accent-red: #EF4444;
+        --accent-amber: #F59E0B;
     }
     
     .stApp {
-        background-color: #080B10 !important;
-        color: #94A3B8 !important;
+        background-color: var(--bg-canvas) !important;
     }
     
-    /* Hide top padding and header gap */
     .block-container {
-        padding-top: 1rem !important;
-        padding-bottom: 2rem !important;
-        max-width: 98% !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
+        max-width: 96% !important;
     }
     
-    /* Top Command Ribbon */
-    .top-ribbon {
-        background: #0E131F;
-        border: 1px solid #1E293B;
-        border-left: 4px solid #06B6D4;
-        padding: 8px 16px;
-        margin-bottom: 12px;
+    /* ── Header ── */
+    .soc-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 2px;
+        text-align: center;
+        margin: 0;
+    }
+    .soc-subtitle {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        text-align: center;
+        margin-top: 2px;
+        margin-bottom: 14px;
+    }
+    
+    /* ── Status Bar ── */
+    .status-bar {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        padding: 10px 20px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.78rem;
     }
-    .top-ribbon-title {
-        font-weight: 800;
-        font-size: 1.1rem;
-        color: #F3F4F6;
-        letter-spacing: 1px;
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
+    .status-label {
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-val-green { color: var(--accent-green); font-weight: 700; }
+    .status-val-red { color: var(--accent-red); font-weight: 700; }
+    .status-val-amber { color: var(--accent-amber); font-weight: 700; }
+    .status-val-cyan { color: var(--accent-cyan); font-weight: 700; }
     
-    /* Badges */
-    .badge-secure {
-        background: #06281E;
-        color: #10B981;
-        border: 1px solid #059669;
-        padding: 2px 8px;
+    /* ── Section Headers ── */
+    .section-hdr {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.82rem;
         font-weight: 700;
-        font-size: 0.78rem;
-    }
-    .badge-attack {
-        background: #3B0D0D;
-        color: #EF4444;
-        border: 1px solid #DC2626;
-        padding: 2px 8px;
-        font-weight: 700;
-        font-size: 0.78rem;
-        animation: blink 1.2s infinite alternate;
-    }
-    @keyframes blink {
-        0% { opacity: 0.7; }
-        100% { opacity: 1.0; }
-    }
-    .badge-amber {
-        background: #2D1A00;
-        color: #F59E0B;
-        border: 1px solid #D97706;
-        padding: 2px 8px;
-        font-weight: 700;
-        font-size: 0.78rem;
-    }
-    
-    /* Containers & Cards */
-    div[data-testid="stVerticalBlock"] > div {
-        border-radius: 0px !important;
-    }
-    .soc-panel {
-        background: #0E131F;
-        border: 1px solid #1E293B;
-        padding: 12px;
-        margin-bottom: 12px;
-    }
-    .panel-header {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #06B6D4;
+        color: var(--accent-cyan);
         text-transform: uppercase;
         letter-spacing: 1px;
-        border-bottom: 1px solid #162032;
+        border-bottom: 1px solid var(--border);
         padding-bottom: 6px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        margin-top: 8px;
     }
     
-    /* Tactile Mechanical Switches & Buttons */
-    .stButton > button {
-        background: #0E131F !important;
-        color: #F3F4F6 !important;
-        border: 1px solid #334155 !important;
-        border-radius: 2px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        font-size: 0.8rem !important;
-        padding: 6px 14px !important;
-        box-shadow: 0 2px 0 #1E293B !important;
-        transition: all 0.05s ease !important;
-    }
-    .stButton > button:hover {
-        border-color: #06B6D4 !important;
-        color: #06B6D4 !important;
-        box-shadow: 0 0 8px rgba(6, 182, 212, 0.4) !important;
-    }
-    .stButton > button:active {
-        transform: translateY(1px) !important;
-        box-shadow: inset 0 2px 4px rgba(0,0,0,0.8) !important;
-    }
-    
-    /* Metric styling */
+    /* ── Metric Overrides ── */
     div[data-testid="stMetric"] {
-        background: #090D16 !important;
-        border: 1px solid #1E293B !important;
+        background: var(--bg-panel) !important;
+        border: 1px solid var(--border) !important;
         border-radius: 0px !important;
-        padding: 8px 12px !important;
+        padding: 10px 14px !important;
     }
     div[data-testid="stMetricLabel"] {
-        color: #64748B !important;
-        font-size: 0.72rem !important;
-        font-weight: 700 !important;
+        color: var(--text-muted) !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
         text-transform: uppercase !important;
         letter-spacing: 0.5px !important;
     }
     div[data-testid="stMetricValue"] {
-        color: #F3F4F6 !important;
-        font-size: 1.1rem !important;
-        font-weight: 800 !important;
+        color: var(--text-primary) !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 700 !important;
     }
     
-    /* Databricks Grid Table */
-    .data-grid {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.76rem;
-        background: #090D16;
-        border: 1px solid #1E293B;
+    /* ── Buttons ── */
+    .stButton > button {
+        background: var(--bg-panel) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 2px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-weight: 700 !important;
+        font-size: 0.78rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        padding: 8px 16px !important;
+        transition: all 0.08s ease !important;
     }
-    .data-grid th {
-        background: #111827;
-        color: #06B6D4;
-        text-align: left;
-        padding: 6px 10px;
-        border-bottom: 1px solid #1E293B;
-        font-weight: 700;
-        letter-spacing: 0.5px;
+    .stButton > button:hover {
+        border-color: var(--accent-cyan) !important;
+        box-shadow: 0 0 12px rgba(6,182,212,0.25) !important;
     }
-    .data-grid td {
-        padding: 6px 10px;
-        border-bottom: 1px solid #162032;
-        color: #CBD5E1;
-    }
-    .data-grid tr:hover {
-        background: #162032;
+    .stButton > button:active {
+        transform: translateY(1px) !important;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.6) !important;
     }
     
-    /* Terminal Output Box */
-    .terminal-box {
+    /* ── Containers ── */
+    div[data-testid="stExpander"] {
+        border: 1px solid var(--border) !important;
+        border-radius: 0px !important;
+        background: var(--bg-panel) !important;
+    }
+    
+    /* ── Terminal ── */
+    .term-output {
         background: #05080E;
-        border: 1px solid #1E293B;
-        border-left: 3px solid #10B981;
-        padding: 10px;
-        font-size: 0.73rem;
-        height: 200px;
+        border: 1px solid var(--border);
+        padding: 12px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.72rem;
+        line-height: 1.6;
+        max-height: 240px;
         overflow-y: auto;
-        color: #10B981;
-        line-height: 1.4;
+        color: var(--text-secondary);
     }
-    .term-sec { color: #10B981; }
-    .term-warn { color: #EF4444; font-weight: 700; }
-    .term-info { color: #06B6D4; }
-    .term-alert { color: #F59E0B; font-weight: 700; }
+    .tl-secure { color: var(--accent-green); }
+    .tl-warn { color: var(--accent-red); font-weight: 600; }
+    .tl-alert { color: var(--accent-amber); font-weight: 600; }
+    .tl-info { color: var(--accent-cyan); }
+    .tl-ts { color: var(--text-muted); }
     
-    /* Sidebar Overrides */
+    /* ── Sidebar ── */
     section[data-testid="stSidebar"] {
         background-color: #0B0F19 !important;
-        border-right: 1px solid #1E293B !important;
+        border-right: 1px solid var(--border) !important;
+    }
+    
+    /* ── Dataframe ── */
+    .stDataFrame {
+        border: 1px solid var(--border) !important;
     }
     </style>
     """, unsafe_allow_html=True)
     
-    # Initialize the integrated system
+    # ── Initialize Backend ──
     if 'smart_city' not in st.session_state:
         st.session_state.smart_city = IntegratedSmartCity()
         st.session_state.smart_city.initialize_mqtt()
     
-    smart_city = st.session_state.smart_city
-    attack_active = smart_city.attack_active
+    sc = st.session_state.smart_city
+    attack_active = sc.attack_active
     
-    # TOP COMMAND RIBBON
-    status_badge = '<span class="badge-attack">🚨 THREAT: INTERCEPTION ACTIVE</span>' if attack_active else '<span class="badge-secure">✓ STATUS: ACTIVE-DEFENSE</span>'
-    broker_badge = f'<span class="badge-amber">BROKER: {smart_city._mqtt_broker}:{smart_city._mqtt_port} | TLS: {"ON" if smart_city._mqtt_use_tls or smart_city._mqtt_port == 8883 else "OFF"} | QKD: BB84-256</span>'
+    # ══════════════════════════════════════════════════════════════
+    # HEADER
+    # ══════════════════════════════════════════════════════════════
+    st.markdown('<p class="soc-title">QKD CYBER DEFENSE OPERATIONS CENTER</p>', unsafe_allow_html=True)
+    st.markdown('<p class="soc-subtitle">Real-time BB84 Quantum Key Distribution Simulation &mdash; IoT Sensor Network Security Monitor</p>', unsafe_allow_html=True)
     
-    col_rib1, col_rib2 = st.columns([3, 1])
-    with col_rib1:
-        st.markdown(f"""
-        <div class="top-ribbon">
-            <div class="top-ribbon-title">🛡️ QKD CYBER DEFENSE OPERATIONS CENTER</div>
-            <div>{status_badge} &nbsp; {broker_badge}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with col_rib2:
-        btn_label = "⚡ [ DISENGAGE ATTACK ]" if attack_active else "⚡ [ INITIATE EAVESDROPPING ]"
-        if st.button(btn_label, use_container_width=True):
-            smart_city.toggle_attack()
+    # ── Global Status Bar ──
+    sys_status = '<span class="status-val-red">ATTACK ACTIVE</span>' if attack_active else '<span class="status-val-green">ACTIVE DEFENSE</span>'
+    mqtt_status = '<span class="status-val-green">CONNECTED</span>' if sc.mqtt_connected else '<span class="status-val-amber">STANDALONE</span>'
+    tls_val = "ON" if (sc._mqtt_use_tls or sc._mqtt_port == 8883) else "OFF"
+    
+    st.markdown(f"""
+    <div class="status-bar">
+        <div class="status-item"><span class="status-label">System:</span> {sys_status}</div>
+        <div class="status-item"><span class="status-label">Protocol:</span> <span class="status-val-cyan">BB84 + AES-GCM-256</span></div>
+        <div class="status-item"><span class="status-label">Broker:</span> <span class="status-val-cyan">{sc._mqtt_broker}:{sc._mqtt_port}</span></div>
+        <div class="status-item"><span class="status-label">TLS:</span> <span class="status-val-cyan">{tls_val}</span></div>
+        <div class="status-item"><span class="status-label">MQTT:</span> {mqtt_status}</div>
+        <div class="status-item"><span class="status-label">Sensors:</span> <span class="status-val-green">3 ONLINE</span></div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # ══════════════════════════════════════════════════════════════
+    # CONTROL BAR (Centered Row)
+    # ══════════════════════════════════════════════════════════════
+    c1, c2, c3, c4 = st.columns([2, 2, 2, 2])
+    
+    with c1:
+        atk_label = "Stop Attack Simulation" if attack_active else "Simulate Attack"
+        if st.button(
+            f"{'🔴' if attack_active else '🟢'} {atk_label}",
+            use_container_width=True,
+            help="Toggles an intercept-resend (Eve) eavesdropper on the quantum channel. When active, Eve measures each qubit in a random basis and resends it, causing QBER to exceed the 11% BB84 security threshold."
+        ):
+            sc.toggle_attack()
             st.rerun()
 
-    # SIDEBAR CONTROL DECK
-    with st.sidebar:
-        st.markdown('<div class="panel-header">🎛️ DEFENSE COMMAND DECK</div>', unsafe_allow_html=True)
-        
-        st.caption("TACTILE OVERRIDES")
-        if st.button("🔄 [ EXECUTE TELEMETRY CYCLE ]", use_container_width=True):
-            smart_city.update_all_sensors()
+    with c2:
+        if st.button(
+            "🔄 Execute Telemetry Cycle",
+            use_container_width=True,
+            help="Runs a fresh BB84 key exchange for every sensor node, generates new telemetry readings, and publishes encrypted payloads to the MQTT broker."
+        ):
+            sc.update_all_sensors()
             st.rerun()
-            
-        st.divider()
-        
-        st.caption("POLLING RATE CONTROL")
-        poll_rate = st.radio("SELECT INTERVAL", ["MANUAL", "1s", "5s", "10s"], index=2, horizontal=True)
-        
-        if poll_rate != "MANUAL":
-            seconds = 1 if poll_rate == "1s" else (5 if poll_rate == "5s" else 10)
+
+    with c3:
+        refresh = st.selectbox(
+            "Auto-Refresh",
+            ["Off", "5 seconds", "10 seconds"],
+            index=0,
+            help="Automatically re-runs the full telemetry cycle at the selected interval."
+        )
+        if refresh != "Off":
+            ms = 5000 if refresh == "5 seconds" else 10000
             try:
                 from streamlit_autorefresh import st_autorefresh
-                st_autorefresh(interval=seconds * 1000, key="soc_refresh_trigger")
+                st_autorefresh(interval=ms, key="soc_auto")
             except ImportError:
-                time.sleep(seconds)
-                smart_city.update_all_sensors()
+                time.sleep(ms // 1000)
+                sc.update_all_sensors()
                 st.rerun()
 
-        st.divider()
-        
-        st.caption("NETWORK TELEMETRY STATUS")
-        mqtt_state_badge = '<span class="badge-secure">CONNECTED</span>' if smart_city.mqtt_connected else '<span class="badge-amber">STANDALONE</span>'
-        st.markdown(f"MQTT GATEWAY: {mqtt_state_badge}", unsafe_allow_html=True)
-        st.markdown(f"ACTIVE SENSORS: `<3/3 NOMINAL>`")
-        st.markdown(f"CRYPTOGRAPHIC PROTOCOL: `BB84 + AES-GCM-256`")
-
-    # SPLIT-SCREEN SOC WORKSPACE (60% / 40%)
-    col_left, col_right = st.columns([6, 4])
+    with c4:
+        st.metric(
+            "Channel State",
+            "COMPROMISED" if attack_active else "SECURED",
+            help="Reflects whether an active eavesdropper (Eve) is present on the quantum channel."
+        )
     
-    # -------------------------------------------------------------
-    # LEFT PANE (60% Width — Geospatial & Threat Vectors)
-    # -------------------------------------------------------------
-    with col_left:
-        # TOP GEOSPATIAL VECTOR MAP
-        st.markdown('<div class="panel-header">📍 GEOSPATIAL THREAT VECTOR MATRIX</div>', unsafe_allow_html=True)
+    st.markdown("---")
+    
+    # ══════════════════════════════════════════════════════════════
+    # NODE STATUS CARDS (3-Column)
+    # ══════════════════════════════════════════════════════════════
+    st.markdown('<div class="section-hdr">IoT Sensor Node Status</div>', unsafe_allow_html=True)
+    
+    sensor_meta = [
+        ('traffic_light', 'Traffic Signal', 'Monitors vehicle throughput at a signalized intersection.'),
+        ('water_meter', 'Water Utility', 'Tracks volumetric water flow at a municipal reservoir pump station.'),
+        ('surveillance', 'Surveillance Camera', 'Security feed status for a public area monitoring node.'),
+    ]
+    
+    cols = st.columns(3)
+    for col, (key, label, tooltip) in zip(cols, sensor_meta):
+        s = sc.sensors[key]
+        is_secure = s['status'] == 'secure'
+        with col:
+            with st.container(border=True):
+                st.markdown(f"**{label}**")
+                st.caption(f"{s['location']}  ·  `{s['id']}`")
+                
+                m1, m2 = st.columns(2)
+                m1.metric(
+                    "QBER",
+                    f"{s['qber']:.1f}%",
+                    help=f"Quantum Bit Error Rate for this node. {tooltip} Values below 11% indicate a secure channel."
+                )
+                m2.metric(
+                    "Status",
+                    "SECURE" if is_secure else "BREACH",
+                    help="SECURE: QBER < 11%, key exchange succeeded. BREACH: QBER >= 11%, key was aborted to prevent information leakage."
+                )
+                
+                if s['last_key']:
+                    st.code(f"AES-256 Key: {s['last_key'][:12]}...{s['last_key'][-6:]}", language=None)
+                else:
+                    st.code("AES-256 Key: ABORTED — threshold exceeded", language=None)
+                
+                if s['data_points']:
+                    val = s['data_points'][-1]['value']
+                    st.caption(f"Latest telemetry: **{val}**  ·  Updated: {s['last_update'].strftime('%H:%M:%S')}")
+    
+    # ══════════════════════════════════════════════════════════════
+    # GEOSPATIAL MAP + QBER CHART (Side by Side)
+    # ══════════════════════════════════════════════════════════════
+    st.markdown("---")
+    
+    map_col, chart_col = st.columns([1, 1])
+    
+    with map_col:
+        st.markdown('<div class="section-hdr">Geospatial Node Distribution</div>', unsafe_allow_html=True)
         
-        map_lats = []
-        map_lons = []
-        map_names = []
-        map_colors = []
-        map_texts = []
+        lats, lons, names, colors, hovers = [], [], [], [], []
+        for s in sc.sensors.values():
+            lats.append(s['lat'])
+            lons.append(s['lon'])
+            names.append(s['id'])
+            c = '#EF4444' if s['status'] == 'compromised' else '#10B981'
+            colors.append(c)
+            hovers.append(f"{s['id']}<br>{s['location']}<br>QBER: {s['qber']:.1f}%<br>Status: {s['status'].upper()}")
         
-        for key, s in smart_city.sensors.items():
-            map_lats.append(s['lat'])
-            map_lons.append(s['lon'])
-            map_names.append(f"{s['id']} ({s['location']})")
-            color = '#EF4444' if s['status'] == 'compromised' else '#10B981'
-            map_colors.append(color)
-            map_texts.append(f"QBER: {s['qber']:.1f}% | STATUS: {s['status'].upper()}")
-            
         fig_map = go.Figure()
         
-        # Node Vector Markers
+        # Attack pulse rings
+        for s in sc.sensors.values():
+            if s['status'] == 'compromised':
+                fig_map.add_trace(go.Scattermapbox(
+                    lat=[s['lat']], lon=[s['lon']], mode='markers',
+                    marker=dict(size=40, color='#EF4444', opacity=0.25),
+                    hoverinfo='none', showlegend=False
+                ))
+        
         fig_map.add_trace(go.Scattermapbox(
-            lat=map_lats,
-            lon=map_lons,
-            mode='markers+text',
-            marker=dict(
-                size=18,
-                color=map_colors,
-                opacity=0.9
-            ),
-            text=[f"  {n}" for n in map_names],
-            textposition="top right",
-            textfont=dict(size=11, color="#F3F4F6", family="JetBrains Mono"),
-            hoverinfo='text',
-            hovertext=map_texts
+            lat=lats, lon=lons, mode='markers+text',
+            marker=dict(size=14, color=colors, opacity=0.9),
+            text=names, textposition="top center",
+            textfont=dict(size=10, color="#F3F4F6", family="JetBrains Mono"),
+            hoverinfo='text', hovertext=hovers, showlegend=False
         ))
         
-        # Pulsing Attack Circles for compromised nodes
-        pulse_lats = [s['lat'] for s in smart_city.sensors.values() if s['status'] == 'compromised']
-        pulse_lons = [s['lon'] for s in smart_city.sensors.values() if s['status'] == 'compromised']
-        if pulse_lats:
-            fig_map.add_trace(go.Scattermapbox(
-                lat=pulse_lats,
-                lon=pulse_lons,
-                mode='markers',
-                marker=dict(
-                    size=38,
-                    color='#EF4444',
-                    opacity=0.35
-                ),
-                hoverinfo='none'
-            ))
-            
         fig_map.update_layout(
             mapbox_style="carto-darkmatter",
-            mapbox=dict(
-                center=dict(lat=12.9732, lon=77.5966),
-                zoom=12.5
-            ),
+            mapbox=dict(center=dict(lat=12.9732, lon=77.5966), zoom=12.5),
             margin=dict(l=0, r=0, t=0, b=0),
-            height=320,
+            height=340,
             paper_bgcolor="#080B10",
-            plot_bgcolor="#0E131F",
-            showlegend=False
         )
         st.plotly_chart(fig_map, use_container_width=True)
+    
+    with chart_col:
+        st.markdown('<div class="section-hdr">QBER Threat Assessment</div>', unsafe_allow_html=True)
         
-        # BOTTOM QBER THREAT VECTOR MONITOR
-        st.markdown('<div class="panel-header">📊 QUANTUM BIT ERROR RATE (QBER) THREAT VECTOR MONITOR</div>', unsafe_allow_html=True)
+        sensors_list = list(sc.sensors.values())
+        bar_colors = ['#EF4444' if s['qber'] >= 11.0 else '#10B981' for s in sensors_list]
         
-        sensors_list = list(smart_city.sensors.values())
-        qber_df = pd.DataFrame([{
-            'Node': s['id'],
-            'QBER': s['qber'],
-            'Color': '#EF4444' if s['qber'] >= 11.0 else '#10B981'
-        } for s in sensors_list])
-        
-        fig_qber = go.Figure()
-        fig_qber.add_trace(go.Bar(
-            x=qber_df['Node'],
-            y=qber_df['QBER'],
-            marker_color=qber_df['Color'],
-            text=[f"{v:.1f}%" for v in qber_df['QBER']],
+        fig_qber = go.Figure(go.Bar(
+            x=[s['id'] for s in sensors_list],
+            y=[s['qber'] for s in sensors_list],
+            marker_color=bar_colors,
+            text=[f"{s['qber']:.1f}%" for s in sensors_list],
             textposition='outside',
-            textfont=dict(color='#F3F4F6', family="JetBrains Mono")
+            textfont=dict(color='#F3F4F6', family="JetBrains Mono", size=12),
+            hovertemplate="Node: %{x}<br>QBER: %{y:.1f}%<extra></extra>"
         ))
         
-        # 11% Theoretical Interception Ceiling
         fig_qber.add_hline(
-            y=11.0, 
-            line_dash="dash", 
-            line_color="#EF4444", 
-            line_width=2,
-            annotation_text="BB84 THEORETICAL ABORT CEILING (11.0%)", 
-            annotation_font_color="#EF4444",
-            annotation_font_family="JetBrains Mono"
+            y=11.0, line_dash="dash", line_color="#EF4444", line_width=2,
+            annotation_text="BB84 Security Threshold (11%)",
+            annotation_font=dict(color="#EF4444", family="JetBrains Mono", size=11),
+            annotation_position="top left"
         )
         
         fig_qber.update_layout(
             template="plotly_dark",
-            paper_bgcolor="#080B10",
-            plot_bgcolor="#0E131F",
-            margin=dict(l=20, r=20, t=25, b=20),
-            height=280,
-            yaxis=dict(
-                title="QBER (%)",
-                range=[0, max(35, qber_df['QBER'].max() + 8)],
-                gridcolor="#162032"
-            ),
-            xaxis=dict(gridcolor="#162032")
+            paper_bgcolor="#080B10", plot_bgcolor="#0E131F",
+            margin=dict(l=40, r=20, t=20, b=40),
+            height=340,
+            yaxis=dict(title="QBER (%)", range=[0, max(35, max(s['qber'] for s in sensors_list) + 8)], gridcolor="#162032"),
+            xaxis=dict(gridcolor="#162032"),
         )
         st.plotly_chart(fig_qber, use_container_width=True)
-
-    # -------------------------------------------------------------
-    # RIGHT PANE (40% Width — Telemetry Matrix & Cryptographic Stream)
-    # -------------------------------------------------------------
-    with col_right:
-        # SNIP-TO-GRID NODE TELEMETRY TABLE
-        st.markdown('<div class="panel-header">📋 DATABRICKS-STYLE TELEMETRY MATRIX</div>', unsafe_allow_html=True)
+    
+    # ══════════════════════════════════════════════════════════════
+    # TELEMETRY TABLE + TERMINAL (Side by Side)
+    # ══════════════════════════════════════════════════════════════
+    st.markdown("---")
+    
+    tbl_col, term_col = st.columns([1, 1])
+    
+    with tbl_col:
+        st.markdown('<div class="section-hdr">Node Telemetry Matrix</div>', unsafe_allow_html=True)
         
-        table_rows = []
-        for s in smart_city.sensors.values():
-            status_html = f'<span class="badge-secure">SECURE</span>' if s['status'] == 'secure' else f'<span class="badge-attack">COMPROMISED</span>'
-            key_hash = f"<code>{s['last_key'][:8]}...{s['last_key'][-4:]}</code>" if s['last_key'] else '<span style="color:#EF4444">ABORTED</span>'
-            latest_val = s['data_points'][-1]['value'] if s['data_points'] else 'N/A'
+        rows = []
+        for s in sc.sensors.values():
+            latest = s['data_points'][-1]['value'] if s['data_points'] else 'N/A'
+            key_hash = f"{s['last_key'][:8]}...{s['last_key'][-4:]}" if s['last_key'] else "ABORTED"
+            rows.append({
+                'Node ID': s['id'],
+                'Location': s['location'],
+                'QBER (%)': round(s['qber'], 1),
+                'Payload': str(latest),
+                'AES-256 Key': key_hash,
+                'State': s['status'].upper()
+            })
+        
+        df = pd.DataFrame(rows)
+        st.dataframe(
+            df,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "QBER (%)": st.column_config.NumberColumn(format="%.1f%%", help="Quantum Bit Error Rate — percentage of mismatched sifted key bits between Alice and Bob"),
+                "AES-256 Key": st.column_config.TextColumn(help="Truncated SHA-256 digest of the BB84 sifted key. Used for AES-GCM-256 payload encryption."),
+                "State": st.column_config.TextColumn(help="SECURE if QBER < 11%, COMPROMISED if QBER >= 11%."),
+                "Payload": st.column_config.TextColumn(help="Latest sensor telemetry reading from this node."),
+            }
+        )
+    
+    with term_col:
+        st.markdown('<div class="section-hdr">Cryptographic Handshake Log</div>', unsafe_allow_html=True)
+        
+        lines = []
+        for entry in reversed(sc.terminal_logs):
+            ts = entry['ts']
+            level = entry['level']
+            msg = entry['msg']
             
-            table_rows.append(f"""
-            <tr>
-                <td><b>{s['id']}</b></td>
-                <td>{s['location']}</td>
-                <td><b style="color:{'#EF4444' if s['qber']>=11.0 else '#10B981'}">{s['qber']:.1f}%</b></td>
-                <td>{latest_val}</td>
-                <td>{key_hash}</td>
-                <td>{status_html}</td>
-            </tr>
-            """)
-            
-        table_html = f"""
-        <table class="data-grid">
-            <thead>
-                <tr>
-                    <th>NODE_ID</th>
-                    <th>LOCATION</th>
-                    <th>QBER</th>
-                    <th>TELEMETRY</th>
-                    <th>AES-256 HASH</th>
-                    <th>STATE</th>
-                </tr>
-            </thead>
-            <tbody>
-                {''.join(table_rows)}
-            </tbody>
-        </table>
-        """
-        st.markdown(table_html, unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # CRYPTOGRAPHIC HANDSHAKE TERMINAL STREAM
-        st.markdown('<div class="panel-header">💻 LIVE CRYPTOGRAPHIC STREAM TERMINAL</div>', unsafe_allow_html=True)
-        
-        term_lines = []
-        for log in reversed(smart_city.terminal_logs):
-            if "SECURE" in log:
-                term_lines.append(f'<div class="term-sec">{log}</div>')
-            elif "WARN" in log or "ABORT" in log:
-                term_lines.append(f'<div class="term-warn">{log}</div>')
-            elif "ALERT" in log:
-                term_lines.append(f'<div class="term-alert">{log}</div>')
+            if level == "SECURE":
+                lines.append(f'<span class="tl-ts">[{ts}]</span> <span class="tl-secure">{msg}</span>')
+            elif level == "WARN":
+                lines.append(f'<span class="tl-ts">[{ts}]</span> <span class="tl-warn">{msg}</span>')
+            elif level == "ALERT":
+                lines.append(f'<span class="tl-ts">[{ts}]</span> <span class="tl-alert">{msg}</span>')
             else:
-                term_lines.append(f'<div class="term-info">{log}</div>')
+                lines.append(f'<span class="tl-ts">[{ts}]</span> <span class="tl-info">{msg}</span>')
+        
+        term_content = "<br>".join(lines) if lines else '<span class="tl-info">Awaiting handshake cycles...</span>'
+        st.markdown(f'<div class="term-output">{term_content}</div>', unsafe_allow_html=True)
+    
+    # ══════════════════════════════════════════════════════════════
+    # TREND CHARTS (Tabbed)
+    # ══════════════════════════════════════════════════════════════
+    st.markdown("---")
+    st.markdown('<div class="section-hdr">Telemetry & QBER Time Series</div>', unsafe_allow_html=True)
+    
+    tab_labels = ["Traffic Signal", "Water Utility", "Surveillance"]
+    tab_keys = ['traffic_light', 'water_meter', 'surveillance']
+    tabs = st.tabs(tab_labels)
+    
+    for tab, key in zip(tabs, tab_keys):
+        with tab:
+            s = sc.sensors[key]
+            if len(s['data_points']) >= 2:
+                df_t = pd.DataFrame(s['data_points'])
                 
-        terminal_html = f"""
-        <div class="terminal-box">
-            {''.join(term_lines) if term_lines else '<div class="term-info">[SYSTEM READY] Awaiting handshake cycles...</div>'}
-        </div>
-        """
-        st.markdown(terminal_html, unsafe_allow_html=True)
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=df_t['time'], y=df_t['value'],
+                    mode='lines+markers', name='Telemetry',
+                    line=dict(color='#3B82F6', width=2),
+                    hovertemplate="Value: %{y}<br>Time: %{x}<extra></extra>"
+                ))
+                fig.add_trace(go.Scatter(
+                    x=df_t['time'], y=df_t['qber'],
+                    mode='lines+markers', name='QBER (%)', yaxis='y2',
+                    line=dict(color='#EF4444', width=2, dash='dash'),
+                    hovertemplate="QBER: %{y:.1f}%<br>Time: %{x}<extra></extra>"
+                ))
+                fig.update_layout(
+                    template="plotly_dark",
+                    paper_bgcolor="#080B10", plot_bgcolor="#0E131F",
+                    margin=dict(l=40, r=40, t=20, b=40),
+                    height=280,
+                    yaxis=dict(title="Telemetry Value", gridcolor="#162032"),
+                    yaxis2=dict(title="QBER (%)", overlaying="y", side="right",
+                                range=[0, max(35, df_t['qber'].max() + 5)], gridcolor="#162032"),
+                    xaxis=dict(gridcolor="#162032"),
+                    hovermode='x unified',
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5)
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Collecting data points — click 'Execute Telemetry Cycle' to generate readings.")
+    
+    # ══════════════════════════════════════════════════════════════
+    # SECURITY AUDIT LOG
+    # ══════════════════════════════════════════════════════════════
+    st.markdown("---")
+    
+    with st.expander("Security Audit Event Log", expanded=False):
+        events = []
+        for s in sc.sensors.values():
+            if s['status'] == 'compromised':
+                events.append({
+                    'Time': s['last_update'].strftime('%H:%M:%S'),
+                    'Node': s['id'],
+                    'Location': s['location'],
+                    'Event': 'ATTACK DETECTED',
+                    'QBER': f"{s['qber']:.1f}%",
+                    'Action': 'Key aborted, transmission blocked'
+                })
+            elif s['last_key']:
+                events.append({
+                    'Time': s['last_update'].strftime('%H:%M:%S'),
+                    'Node': s['id'],
+                    'Location': s['location'],
+                    'Event': 'KEY EXCHANGE OK',
+                    'QBER': f"{s['qber']:.1f}%",
+                    'Action': f"Encrypted via AES-256 ({s['last_key'][:8]}...)"
+                })
+        
+        if events:
+            st.dataframe(pd.DataFrame(events), use_container_width=True, hide_index=True)
+        else:
+            st.caption("No security events recorded yet.")
+    
+    # ══════════════════════════════════════════════════════════════
+    # BB84 PROTOCOL REFERENCE
+    # ══════════════════════════════════════════════════════════════
+    with st.expander("BB84 Protocol Reference", expanded=False):
+        st.markdown("""
+**BB84 Quantum Key Distribution Protocol**
+
+1. **Quantum State Preparation** — Alice encodes random bits into photon polarization states using randomly chosen rectilinear or diagonal bases.
+2. **Quantum Transmission** — Photons travel through the quantum channel to Bob.
+3. **Measurement** — Bob measures each photon in a randomly chosen basis.
+4. **Basis Reconciliation (Sifting)** — Alice and Bob publicly compare bases and keep only bits where they used the same basis.
+5. **QBER Estimation** — A random sample of sifted bits is compared to estimate the Quantum Bit Error Rate.
+6. **Security Decision** — If QBER ≥ 11%, the exchange is aborted (eavesdropper detected). If QBER < 11%, the remaining sifted bits undergo privacy amplification.
+7. **Key Derivation** — SHA-256 hashing produces a 256-bit AES-GCM symmetric key for payload encryption.
+        """)
 
 if __name__ == "__main__":
     main()
