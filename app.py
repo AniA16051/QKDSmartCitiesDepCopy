@@ -658,9 +658,9 @@ def main():
                 if st.button("CRYPTOGRAPHIC PING", key=f"ping_{key}", use_container_width=True, help="Send a cryptographic challenge to this node. It must encrypt the response using its valid AES-256 key."):
                     success = sc.ping_node(key)
                     if success:
-                        st.toast(f"Ping OK for {s['id']}", icon="✅")
+                        st.toast(f"Ping OK for {s['id']}")
                     else:
-                        st.toast(f"Ping FAILED for {s['id']}", icon="❌")
+                        st.toast(f"Ping FAILED for {s['id']}")
                     st.rerun()
                 
                 if s['data_points']:
