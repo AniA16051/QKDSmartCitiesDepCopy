@@ -288,11 +288,26 @@ class IntegratedSmartCity:
         else:
             self.attacked_target = target
             msg = f"INTERCEPT-RESEND ATTACK ACTIVATED ON {target.upper()}"
+            
+        try:
+            with open("smartcity_sync.json", "w") as f:
+                json.dump({"attacked_target": self.attacked_target}, f)
+        except Exception:
+            pass
+            
         self.log_terminal(f"THREAT ENGINE :: {msg}", "ALERT" if self.attack_active else "INFO")
         self.update_all_sensors()
         return self.attack_active
     
     def update_all_sensors(self):
+        try:
+            if os.path.exists("smartcity_sync.json"):
+                with open("smartcity_sync.json", "r") as f:
+                    data = json.load(f)
+                    self.attacked_target = data.get("attacked_target", self.attacked_target)
+        except Exception:
+            pass
+            
         results = {}
         for sensor_name in self.sensors.keys():
             results[sensor_name] = self.simulate_sensor(sensor_name)
