@@ -288,26 +288,11 @@ class IntegratedSmartCity:
         else:
             self.attacked_target = target
             msg = f"INTERCEPT-RESEND ATTACK ACTIVATED ON {target.upper()}"
-            
-        try:
-            with open("smartcity_sync.json", "w") as f:
-                json.dump({"attacked_target": self.attacked_target}, f)
-        except Exception:
-            pass
-            
         self.log_terminal(f"THREAT ENGINE :: {msg}", "ALERT" if self.attack_active else "INFO")
         self.update_all_sensors()
         return self.attack_active
     
     def update_all_sensors(self):
-        try:
-            if os.path.exists("smartcity_sync.json"):
-                with open("smartcity_sync.json", "r") as f:
-                    data = json.load(f)
-                    self.attacked_target = data.get("attacked_target", self.attacked_target)
-        except Exception:
-            pass
-            
         results = {}
         for sensor_name in self.sensors.keys():
             results[sensor_name] = self.simulate_sensor(sensor_name)
@@ -516,20 +501,11 @@ def main():
     """, unsafe_allow_html=True)
     
     # ── Initialize Backend ──
-    @st.cache_resource
-    def get_smart_city_v3():
-        # Clean up any residual state file from other commits
-        try:
-            import os
-            if os.path.exists("smartcity_sync.json"):
-                os.remove("smartcity_sync.json")
-        except:
-            pass
-        city = IntegratedSmartCity()
-        city.initialize_mqtt()
-        return city
-        
-    sc = get_smart_city_v3()
+    if 'smart_city' not in st.session_state:
+        st.session_state.smart_city = IntegratedSmartCity()
+        st.session_state.smart_city.initialize_mqtt()
+    
+    sc = st.session_state.smart_city
     attack_active = sc.attack_active
     
     # ══════════════════════════════════════════════════════════════
