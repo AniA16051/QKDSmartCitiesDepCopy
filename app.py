@@ -517,12 +517,19 @@ def main():
     
     # ── Initialize Backend ──
     @st.cache_resource
-    def get_smart_city():
+    def get_smart_city_v3():
+        # Clean up any residual state file from other commits
+        try:
+            import os
+            if os.path.exists("smartcity_sync.json"):
+                os.remove("smartcity_sync.json")
+        except:
+            pass
         city = IntegratedSmartCity()
         city.initialize_mqtt()
         return city
         
-    sc = get_smart_city()
+    sc = get_smart_city_v3()
     attack_active = sc.attack_active
     
     # ══════════════════════════════════════════════════════════════
