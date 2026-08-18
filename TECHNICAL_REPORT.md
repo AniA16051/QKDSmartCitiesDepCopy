@@ -54,7 +54,7 @@ According to the Heisenberg Uncertainty Principle and the Observer Effect, obser
 The entire application runs from a single, highly integrated file (`app.py`), divided into Backend Logic and Frontend UI.
 
 ### A. The Backend: `IntegratedSmartCity` Class
-This class is instantiated inside `st.session_state` to ensure it persists across UI reruns.
+This class is instantiated using Streamlit's `@st.cache_resource` decorator. This architectural decision makes the simulation engine a **Global Singleton**. Instead of being isolated per browser tab (`st.session_state`), it is shared across the entire server memory. This enables "Global Multiplayer" synchronization: if one user initiates an attack, all other connected clients will automatically see the breach via the Auto-Refresh loop without needing a database.
 *   **`self.sensors`:** A dictionary holding the state, geo-coordinates, and rolling 25-point data history of three nodes: Traffic Signal, Water Utility, and Surveillance Camera.
 *   **`simulate_sensor(sensor_name)`:** The core simulation loop.
     *   It triggers the `UnifiedBB84` key exchange.

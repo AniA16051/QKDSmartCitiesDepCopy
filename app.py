@@ -501,11 +501,13 @@ def main():
     """, unsafe_allow_html=True)
     
     # ── Initialize Backend ──
-    if 'smart_city' not in st.session_state:
-        st.session_state.smart_city = IntegratedSmartCity()
-        st.session_state.smart_city.initialize_mqtt()
-    
-    sc = st.session_state.smart_city
+    @st.cache_resource
+    def get_smart_city():
+        city = IntegratedSmartCity()
+        city.initialize_mqtt()
+        return city
+        
+    sc = get_smart_city()
     attack_active = sc.attack_active
     
     # ══════════════════════════════════════════════════════════════
