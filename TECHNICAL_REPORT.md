@@ -100,3 +100,28 @@ The project is designed to deploy instantly to cloud infrastructure without comp
 3.  **Render Deployment:** The repository contains a lightweight `Dockerfile` based on `python:3.10-slim`. It sets `MPLBACKEND=Agg` (to prevent UI rendering crashes) and serves the Streamlit app on port `8501`. The `render.yaml` Blueprint file configures the exact CPU/RAM limits for one-click infrastructure-as-code deployment on Render's Web Services.
 
 Because the MQTT broker (`broker.emqx.io`) is a decoupled cloud service, anyone opening the live deployment URL from any browser in the world will subscribe to the exact same live data stream, perfectly demonstrating edge-to-cloud IoT security.
+
+---
+
+## 7. Repository File Manifest (Directory Breakdown)
+
+The repository has been heavily optimized for cloud deployment. Here is a breakdown of every active component and legacy artifact left in the root directory:
+
+### Core Application
+*   **`app.py`**: The unified core. Contains the `UnifiedBB84` NumPy simulator, the `IntegratedSmartCity` state machine, and the entire Streamlit SOC frontend UI. Unifying these into one file eliminated import complexity and ensured perfect Streamlit Community Cloud compatibility.
+*   **`requirements.txt`**: The strict dependency lockfile required for Streamlit Cloud and Render deployments (contains `streamlit`, `numpy`, `plotly`, `paho-mqtt`).
+*   **`node_manager.py`**: A legacy orchestration script historically used to boot up multiple isolated Python processes on a single local machine. Obsolete in the current cloud-first UI architecture, but preserved for local reference.
+
+### Deployment Infrastructure
+*   **`Dockerfile`**: A multi-stage Docker configuration (using `python:3.10-slim`) required for deploying the Streamlit UI to custom cloud providers like Render or AWS ECS. It sets the `MPLBACKEND=Agg` environment variable to prevent graphical thread crashes in headless Linux containers.
+*   **`render.yaml`**: The Infrastructure-as-Code (IaC) "Blueprint" for Render. It automatically configures the Web Service, sets the start command to `streamlit run app.py`, and links the deployment to the Docker environment.
+*   **`docker-compose.yml` & `docker-compose.tunnel.yml`**: Historically used for local containerization and tunneling (e.g., exposing a local broker to the internet). Preserved for advanced local testing.
+*   **`emqxsl-ca.crt`**: The root Certificate Authority (CA) file required to establish secure TLS connections to the EMQX cloud broker.
+*   **`.dockerignore` / `.gitignore`**: Standard exclusions to prevent pushing virtual environments, pycache, or environment variable files (`.env`) to the remote repository.
+
+### Documentation & Legacy Folders
+*   **`README.md`**: The primary GitHub landing page, providing a high-level summary and rapid cloud deployment instructions.
+*   **`TECHNICAL_REPORT.md`**: This exact document, providing the deep-dive architectural and academic explanation of the project.
+*   **`core/`, `network/`, `dashboard/`**: The legacy multi-folder architecture. Originally, the BB84 logic (`core/`) and MQTT sensor nodes (`network/`) were completely separate standalone Python scripts meant to be run on physically separate IoT devices (e.g., Raspberry Pis). They are preserved here purely for academic reference if one wishes to build a physical multi-device demo in the future.
+*   **`analysis/`, `templates/`**: Supporting artifacts from the legacy Flask web app and analytical benchmarking iterations of the project.
+*   **`.png` / `.json` files**: Static image assets and data artifacts generated during historical Classical vs. Quantum benchmarking tests.
